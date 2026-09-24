@@ -6,7 +6,12 @@ import (
 )
 
 // ErrPartidaNaoEncontrada é devolvido quando não existe partida com o ID pedido.
-var ErrPartidaNaoEncontrada = errors.New("partida não encontrada")
+var (
+	ErrPartidaNaoEncontrada = errors.New("partida não encontrada")
+	ErrPartidaFinalizada    = errors.New("partida já está finalizada")
+	// ErrValidacao embrulha todo erro causado por dado inválido vindo de fora.
+	ErrValidacao = errors.New("dados inválidos")
+)
 
 // TipoJogada representa uma jogada que pode acontecer numa mão de truco.
 // É baseado em string, mas por ser um tipo próprio (não string pura),
@@ -62,7 +67,7 @@ func PontosDaJogada(jogada TipoJogada) (int, error) {
 	case ContraFlor:
 		return 6, nil
 	default:
-		return 0, fmt.Errorf("jogada desconhecida: %q", jogada)
+		return 0, fmt.Errorf("%w: jogada desconhecida: %q", ErrValidacao, jogada)
 	}
 }
 
@@ -70,13 +75,13 @@ func PontosDaJogada(jogada TipoJogada) (int, error) {
 // meta de 12 ou 24 pontos e equipes do mesmo tamanho (1x1 ou 2x2).
 func NovaPartida(pontosParaVencer int, a, b Equipe) (*Partida, error) {
 	if pontosParaVencer != 12 && pontosParaVencer != 24 {
-		return nil, fmt.Errorf("pontos para vencer deve ser 12 ou 24, recebido: %d", pontosParaVencer)
+		return nil, fmt.Errorf("%w: pontos para vencer deve ser 12 ou 24, recebido: %d", ErrValidacao, pontosParaVencer)
 	}
 	if len(a.Jogadores) < 1 || len(a.Jogadores) > 2 {
-		return nil, fmt.Errorf("equipe %q deve ter 1 ou 2 jogadores, tem %d", a.Nome, len(a.Jogadores))
+		return nil, fmt.Errorf("%w: equipe %q deve ter 1 ou 2 jogadores, tem %d", ErrValidacao, a.Nome, len(a.Jogadores))
 	}
 	if len(a.Jogadores) != len(b.Jogadores) {
-		return nil, fmt.Errorf("equipes com tamanhos diferentes: %d x %d", len(a.Jogadores), len(b.Jogadores))
+		return nil, fmt.Errorf("%w: equipes com tamanhos diferentes: %d x %d", ErrValidacao, len(a.Jogadores), len(b.Jogadores))
 	}
 
 	a.Pontos, b.Pontos = 0, 0
@@ -95,13 +100,13 @@ func (p *Partida) EhDeDuplas() bool {
 // a partida como finalizada se ela atingir a pontuação necessária.
 func (p *Partida) RegistrarPontos(equipeIndex int, pontos int) error {
 	if equipeIndex != 0 && equipeIndex != 1 {
-		return fmt.Errorf("índice de equipe inválido: %d (esperado 0 ou 1)", equipeIndex)
+		return fmt.Errorf("%w: índice de equipe inválido: %d (esperado 0 ou 1)", ErrValidacao, equipeIndex)
 	}
 	if pontos <= 0 {
-		return fmt.Errorf("pontos deve ser positivo, recebido: %d", pontos)
+		return fmt.Errorf("%w: pontos deve ser positivo, recebido: %d", ErrValidacao, pontos)
 	}
 	if p.Finalizada {
-		return fmt.Errorf("partida %d já está finalizada", p.ID)
+		return fmt.Errorf("partida %d: %w", p.ID, ErrPartidaFinalizada)
 	}
 
 	p.Equipes[equipeIndex].Pontos += pontos
