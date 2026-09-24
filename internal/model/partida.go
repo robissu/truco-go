@@ -1,6 +1,12 @@
 package model
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+// ErrPartidaNaoEncontrada é devolvido quando não existe partida com o ID pedido.
+var ErrPartidaNaoEncontrada = errors.New("partida não encontrada")
 
 // TipoJogada representa uma jogada que pode acontecer numa mão de truco.
 // É baseado em string, mas por ser um tipo próprio (não string pura),
