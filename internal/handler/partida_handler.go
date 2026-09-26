@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/robissu/truco-go/internal/aovivo"
 	"github.com/robissu/truco-go/internal/model"
 	"github.com/robissu/truco-go/internal/service"
 )
@@ -14,11 +15,12 @@ import (
 // PartidaHandler traduz HTTP <-> service: lê a requisição, chama o caso de
 // uso e escreve a resposta. Não tem regra de negócio.
 type PartidaHandler struct {
-	svc *service.PartidaService
+	svc         *service.PartidaService
+	transmissor *aovivo.Transmissor
 }
 
-func NovoPartidaHandler(svc *service.PartidaService) *PartidaHandler {
-	return &PartidaHandler{svc: svc}
+func NovoPartidaHandler(svc *service.PartidaService, transmissor *aovivo.Transmissor) *PartidaHandler {
+	return &PartidaHandler{svc: svc, transmissor: transmissor}
 }
 
 // Registrar liga as rotas da API no mux.
@@ -27,6 +29,7 @@ func (h *PartidaHandler) Registrar(mux *http.ServeMux) {
 	mux.HandleFunc("GET /partidas", h.listar)
 	mux.HandleFunc("GET /partidas/{id}", h.buscar)
 	mux.HandleFunc("POST /partidas/{id}/jogadas", h.registrarJogada)
+	mux.HandleFunc("GET /partidas/{id}/ao-vivo", h.aoVivo)
 }
 
 // Formatos JSON da API. Ficam separados das structs do model pra que o
@@ -131,6 +134,7 @@ func (h *PartidaHandler) registrarJogada(w http.ResponseWriter, r *http.Request)
 		responderErroDoService(w, err)
 		return
 	}
+	h.transmissor.Publicar(*p)
 	responderJSON(w, http.StatusOK, paraJSON(p))
 }
 

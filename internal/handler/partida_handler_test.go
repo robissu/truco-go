@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/robissu/truco-go/internal/aovivo"
 	"github.com/robissu/truco-go/internal/repository"
 	"github.com/robissu/truco-go/internal/service"
 )
@@ -15,7 +16,7 @@ import (
 func novoServidor() *http.ServeMux {
 	mux := http.NewServeMux()
 	svc := service.NovoPartidaService(repository.NovaMemoria())
-	NovoPartidaHandler(svc).Registrar(mux)
+	NovoPartidaHandler(svc, aovivo.NovoTransmissor()).Registrar(mux)
 	return mux
 }
 

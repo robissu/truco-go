@@ -8,6 +8,7 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/robissu/truco-go/internal/aovivo"
 	"github.com/robissu/truco-go/internal/handler"
 	"github.com/robissu/truco-go/internal/repository"
 	"github.com/robissu/truco-go/internal/service"
@@ -22,7 +23,8 @@ func main() {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("ok"))
 	})
-	handler.NovoPartidaHandler(svc).Registrar(mux)
+
+	handler.NovoPartidaHandler(svc, aovivo.NovoTransmissor()).Registrar(mux)
 
 	addr := ":8080"
 	log.Printf("servidor ouvindo em %s", addr)
