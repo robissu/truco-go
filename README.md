@@ -42,6 +42,7 @@ Para usar um Postgres existente, defina `DATABASE_URL`
 | `GET` | `/partidas` | lista as partidas |
 | `GET` | `/partidas/{id}` | consulta o placar de uma partida |
 | `POST` | `/partidas/{id}/jogadas` | registra uma jogada ganha por uma equipe |
+| `GET` | `/partidas/{id}/ao-vivo` | WebSocket: envia o placar a cada jogada registrada |
 
 Criar uma partida:
 
@@ -153,3 +154,4 @@ docker run --rm --network truco-go_default \
 - Não há histórico das jogadas, apenas o placar acumulado.
 - Sem *graceful shutdown*: ao encerrar, as requisições em andamento não são aguardadas.
 - As migrations rodam só na primeira subida do banco. Uma ferramenta como `golang-migrate` resolveria a evolução do schema.
+- O placar ao vivo funciona dentro de uma única instância da API: os espectadores ficam registrados na memória do processo. Com várias instâncias, seria preciso um sistema de mensagens entre elas (ex.: Redis Pub/Sub ou AWS SNS/SQS).
